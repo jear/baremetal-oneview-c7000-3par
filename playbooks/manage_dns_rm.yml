@@ -1,0 +1,37 @@
+###
+# Copyright (2016-2017) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
+---
+# This playbook deploys the whole application stack in this site.
+- hosts: all-servers
+  connection: local
+  gather_facts: no
+  vars:
+    config: "{{ playbook_dir }}/../oneview_config.json"
+    server_profile_name: "{{ inventory_hostname }}"
+    server_profile_template: ""
+
+  tasks:
+    - name: Add or delete host  in dns pri.jear.co forward zone 
+      nsupdate:
+        key_name: 10.69.40.251.jear.co
+        key_secret: ""
+        server: pri.jear.co
+        zone: "jear.co"
+        record: "{{server_profile_name}}"
+        #value: "{{ server_ip.stdout }}"
+        state: absent #uncomment to delete
+

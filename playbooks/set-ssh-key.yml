@@ -1,0 +1,42 @@
+---
+#
+# Pre installation tasks.
+#
+#include_tasks: ".unix.pre.yml"
+
+#
+#
+#
+
+- name: Install Docker and Docker Compose on CentOS
+  hosts: all-servers
+  gather_facts: no
+  become: true
+  vars:
+    server_profile_name: "{{ inventory_hostname }}"
+
+  tasks:
+    - selinux:
+        state: disabled
+
+#    - name: Delete keys in sysadmin/.ssh/known_hosts
+#      lineinfile:
+#        dest=/root/.ssh/known_hosts
+#        state=absent
+#        regexp='{{ server_profile_name }}'
+#      delegate_to: localhost
+
+#    - local_action: command ssh-copy-id {{remote_user}}@{{hostname}}
+
+    - name: ssh-copy-id
+      shell: "ssh-copy-id  -o StrictHostKeyChecking=no {{ server_profile_name }}"
+      delegate_to: localhost
+
+#    - name: Copy ssh.tar
+#      shell: "sshpass -p hpinvent scp -o StrictHostKeyChecking=no /root/ssh.tar root@{{ server_profile_name }}:/root/ssh.tar"
+#      delegate_to: localhost
+
+#    - name: Untar ssh.tar
+#      shell: "sshpass -p hpinvent ssh -o StrictHostKeyChecking=no root@{{ server_profile_name }} 'cd / ; tar xf /root/ssh.tar'"
+#      delegate_to: localhost
+

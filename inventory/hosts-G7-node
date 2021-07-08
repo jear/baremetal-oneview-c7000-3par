@@ -1,0 +1,15 @@
+#####
+[masters]
+node1
+node2
+
+[workers]
+node3
+node4
+node5
+
+[all-servers:children]
+masters
+workers
+
+[discovered_dhcp_leases]

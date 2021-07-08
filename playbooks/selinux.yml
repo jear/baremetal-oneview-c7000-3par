@@ -1,0 +1,51 @@
+---
+#
+# Pre installation tasks.
+#
+#include_tasks: ".unix.pre.yml"
+
+#
+#
+#
+
+#- name: Configure hostname and disable firewall
+- hosts: all-servers
+  gather_facts: no
+  become: true
+  vars:
+    ansible_user: "root"
+    ansible_host: "{{ inventory_hostname }}"
+    templates_dir: "{{ playbook_dir }}/../templates"
+#    docker_ee_repository_url: "https://storebits.docker.com/ee/m/sub-be43957b-74b2-4d6c-a187-6d570194f165"
+#    docker-ee-version: "stable"
+
+  tasks:
+#    - set_fact:
+#        rem_user: "{{ ansible_user | default(lookup('env','USER')) }}"
+#        rem_host: "{{ ansible_host }}"
+#    - local_action: command ssh-copy-id {{ rem_user }}@{{ rem_host }}
+#    - setup:
+    - selinux:
+        policy: targeted
+        state: permissive
+
+
+# Post installation tasks.
+#
+#    - name: Unconditionally reboot the machine with all defaults
+#      reboot:
+
+#    - name: Attempting reboot
+#      shell: reboot
+#      async: 1202
+#      poll: 0
+    
+#    - name: Waiting for resurection
+#      wait_for_connection:
+#        delay: 60
+#        timeout: 300
+
+#    - name: Is it still you Bob?
+#      setup:
+
+

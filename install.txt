@@ -1,0 +1,133 @@
+yum update -y
+
+grubby --update-kernel=ALL --args="rd.driver.blacklist=nouveau nouveau.modeset=0"
+mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
+echo "blacklist nouveau" > /etc/modprobe.d/nouveau-blacklist.conf
+dracut /boot/initramfs-$(uname -r).img $(uname -r)
+reboot
+
+rpm -ql kernel-devel
+rpm -qa kernel\*
+
+yum remove -y kernel-tools-libs-3.10.0-1160.el7.x86_64 kernel-tools-3.10.0-1160.el7.x86_64
+yum remove -y kernel-3.10.0-1160.el7.x86_64
+yum -y remove kernel-devel-$(uname -r)
+
+yum -y install kernel-devel
+yum -y install kernel-headers
+yum -y install wget git bzip2 perl gcc gcc-c++
+
+
+yum -y install kernel-3.10.0-1160.11.1.el7.x86_64
+yum -y install kernel-devel-$(uname -r)
+
+chmod +x NVIDIA-Linux-x86_64-460.32.03.run
+./NVIDIA-Linux-x86_64-460.32.03.run
+
+
+####################################################################
+yum install -y yum-utils \
+  device-mapper-persistent-data \
+  lvm2
+yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce docker-ce-cli containerd.io -y
+systemctl start docker
+
+####################################################################
+
+docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
+
+docker run -d --privileged --restart=unless-stopped --net=host \
+  -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.3.2 \
+  --server https://10.202.115.12 --token g772tbjttk6w495dbdx7tvfwhhjb7bwbmxhqm74jck8rn5z2mp4nr8 \
+  --ca-checksum a436d897baa61418125eb27893d4ba4112810a265a91069babbb7cefcb02c1ab --etcd --controlplane
+
+docker run -d --privileged --restart=unless-stopped --net=host \
+  -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.3.2 \
+  --server https://10.202.115.12 --token g772tbjttk6w495dbdx7tvfwhhjb7bwbmxhqm74jck8rn5z2mp4nr8 \
+  --ca-checksum a436d897baa61418125eb27893d4ba4112810a265a91069babbb7cefcb02c1ab --worker
+
+####################################################################
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+echo $distribution
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo |   sudo tee /etc/yum.repos.d/nvidia-docker.repo
+yum install -y nvidia-docker2
+
+
+vi /etc/docker/daemon.json
+
+{
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "path": "/usr/bin/nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    }
+}
+
+pkill -SIGHUP dockerd
+
+docker run --runtime=nvidia --rm nvidia/cuda:9.0-base nvidia-smi
+docker run --runtime=nvidia --rm nvidia/cuda:10.0-base nvidia-smi
+docker run --runtime=nvidia --rm nvidia/cuda:10.1-base nvidia-smi
+
+###############################################################################
+
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml
+
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta4/nvidia-device-plugin.yml
+
+kubectl label nodes node-2gpu accelerator=nvidia-tesla-m6
+kubectl label nodes bdworker-gpu2 accelerator=nvidia-tesla-m6
+kubectl label nodes bdworker-gpu1 accelerator=nvidia-tesla-m6
+
+
+pkill -SIGHUP dockerd
+
+journalctl -r -u kubelet
+
+systemctl status kubelet
+
+systemctl restart kubelet
+systemctl status kubelet -l
+
+cat /etc/nvidia-container-runtime/config.toml
+systemctl daemon-reload
+systemctl restart docker
+
+journalctl -xe
+ll /var/run/docker/runtime-nvidia/moby/
+vi /etc/docker/daemon.json
+reboot
+
+ll /var/lib/kubelet/device-plugins/nvidia.sock
+
+
+mkdir workspace
+cd workspace/
+git clone https://github.com/NVIDIA/k8s-device-plugin.git
+
+cd k8s-device-plugin/
+
+cat /etc/docker/daemon.json
+
+
+docker pull nvidia/k8s-device-plugin:1.9
+docker pull nvidia/k8s-device-plugin:1.10
+docker pull nvidia/k8s-device-plugin:1.11
+
+docker pull nvidia/digits:10.0
+docker pull nvidia/digits
+
+###########################################################################
+
+https://engineering.bitnami.com/articles/using-gpus-with-kubernetes.html
+
+
+
+
+

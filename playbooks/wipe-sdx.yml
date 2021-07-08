@@ -1,0 +1,23 @@
+---
+#
+# Pre installation tasks.
+#
+#include_tasks: ".unix.pre.yml"
+
+#
+#
+#
+#
+- hosts: all-servers
+  gather_facts: no
+  become: true
+  vars:
+    templates_dir: "{{ playbook_dir }}/../templates"
+
+  tasks:
+    - name: "wipefs /dev/sda --force --all"
+      shell: "wipefs /dev/sda --force --all"
+
+    - name: "wipefs /dev/sdb --force --all"
+      shell: "wipefs /dev/sdb --force --all"
+

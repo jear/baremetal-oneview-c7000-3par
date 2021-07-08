@@ -1,0 +1,1 @@
+localhost       ansible_python_interpreter=/root/miniconda3/envs/ansible_oneview_3par_python36/bin/python

@@ -1,0 +1,44 @@
+---
+#
+# Pre installation tasks.
+#
+#include_tasks: ".unix.pre.yml"
+
+#
+#
+#
+#
+- hosts: all-servers
+  gather_facts: no
+  become: true
+  vars:
+    templates_dir: "{{ playbook_dir }}/../templates"
+#    pwx_data_iface: [ 'ens3f4' ]
+#    pwx_data_ip: 10.12.22.3
+#    pwx_data_netmask: 255.255.255.0
+#    pwx_data_gateway: 10.12.22.254
+
+#    - name: Upgrade all packages
+#      yum: name=* state=latest
+##      ignore_errors: true
+
+
+#    - name: Setup networking (resolv.conf)
+#      template: owner=root group=root mode=644
+#                src={{ templates_dir }}/hosts
+#                dest=/etc/hosts
+#
+  tasks:
+    - name: Setup networking (resolv.conf)
+      template: owner=root group=root mode=644 
+                src={{ templates_dir }}/resolv.conf 
+                dest=/etc/resolv.conf
+
+#    - name: Setup networking (interfaces)
+#      template: owner=root group=root mode=644 
+#                src={{ templates_dir }}/ifcfg-interface-{{ inventory_hostname }}
+#                dest=/etc/sysconfig/network-scripts/ifcfg-{{ item }}
+#      with_items: "{{ pwx_data_iface }}"
+ 
+#    - name: Restart Network
+#      service: name=network state=restarted

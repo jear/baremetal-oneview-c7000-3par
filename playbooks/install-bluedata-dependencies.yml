@@ -1,0 +1,45 @@
+---
+#
+# Pre installation tasks.
+#
+#include_tasks: ".unix.pre.yml"
+
+#
+#
+#
+
+- name: Install Docker and Docker Compose on CentOS
+  hosts: all-servers
+  become: true
+  vars:
+    server_profile_name: "{{ inventory_hostname }}"
+
+  tasks:
+#    - name: Copy EPIC bin
+#      shell: "sshpass -p hpinvent scp -o StrictHostKeyChecking=no /root/bluedata-epic-entdoc-minimal-release-3.7-2207.bin root@{{ server_profile_name }}:/root/bluedata-epic-entdoc-minimal-release-3.7-2207.bin"
+#      delegate_to: localhost
+
+#    - name: "Install dependencies."
+#      yum:
+#        name: "{{ package }}"
+#        state: present
+#      with_items:
+#        - yum-utils
+#        - device-mapper-persistent-data
+#        - lvm2
+#        - lsof
+#        - device-mapper-multipath
+#        - iscsi-initiator-utils
+#        - sg3_utils
+#      loop_control:
+#        loop_var: package
+
+#    - name: "yum update -y"
+#      shell: "yum update -y"
+
+#    - name: "Install dependencies."
+#     shell: "yum install -y bluedata-common-*.el7 openvswitch-2.5.2-1.el7* bluedata-controller-*.el7 bluedata-worker-*.el7 docker selinux-policy python-devel python-cffi libxml2-devel libxslt-devel openssl-devel device-mapper-persistent-data dnsmasq haproxy socat"
+
+# From Bludata 5
+    - name: "Install dependencies."
+      shell: "yum install -y chrony bind-utils bc lvm2 parted autofs rpcbind libcgroup-tools psmisc nfs-utils python-ipaddr python-iniparse patch curl wget openssh-clients python-setuptools createrepo openldap-clients yum-utils sos python-requests python-requests-kerberos python-argparse python-boto python-urllib3 policycoreutils-python python-dateutil ceph-common docker selinux-policy python-devel python-cffi python-virtualenv python-dateutil libxml2-devel libxslt-devel openssl-devel device-mapper-persistent-data dnsmasq haproxy socat"

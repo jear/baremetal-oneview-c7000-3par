@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: add A record
+      nsupdate:
+        server: pri.jear.co
+        key_name: 10.202.115.251.jear.co
+        #key_name: rndc-key
+        key_secret: ""
+        zone: jear.co
+        record: bay99
+        value: 10.202.115.151
+        #state: absent

@@ -1,0 +1,194 @@
+###
+# Copyright (2016-2017) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
+---
+# This playbook deploys the whole application stack in this site.
+- hosts: all-servers
+  connection: local
+  gather_facts: no
+  vars:
+    config: "{{ playbook_dir }}/oneview_config.json"
+    server_profile_name: "{{ inventory_hostname }}"
+    server_profile_template: ""
+    osbase: ""
+    addon: "disk"
+    my_storage_system_ip: "10.71.0.193"
+    my_storage_system_username: ""
+    my_storage_system_password: ""
+    size_unit: "GiB"
+    size: 300
+    autolun: "true"
+    lunid0: "0"
+    lunid1: "1"
+    inventory_dir: ""
+
+  tasks:
+    - name: assign Server Hardware from Server Profile
+      oneview_server_profile:
+#        state: "present"
+#        auto_assign_server_hardware: true
+        config: "{{ config }}"
+        data:
+          name: "{{ server_profile_name }}"
+#          serverProfileTemplateName: "{{ server_profile_template }}"
+##          serverHardwareName: "{{ server_hardware_name }}"
+#      register: task_result
+#      until: task_result is succeeded
+#      retries: 5
+#      delay: 5
+      delegate_to: localhost
+
+    - name: Gather facts about a Server Profile by name
+      oneview_server_profile_facts:
+        config: "{{ config }}"
+        name: "{{server_profile_name}}"
+      delegate_to: localhost
+
+    - debug:
+#       msg: "{{ server_profile }}"
+#       msg: "mac_address={{ server_profile.connections[2].mac }}"
+
+    - name: Wait 300 seconds
+      wait_for_connection:
+#        delay: 1500  #  only start checking after 25 minutes
+        timeout: 300
+
+- hosts: all-servers
+  connection: local
+  gather_facts: no
+  vars:
+    config: "{{ playbook_dir }}/../oneview_config.json"
+    server_profile_name: "{{ inventory_hostname }}"
+
+  serial : true
+  tasks:
+    - debug:
+       msg: "server_mac={{ server_profile.connectionSettings.connections[0].mac}}"
+
+    - name: Capturing server IP
+      shell: arp-scan -I ens160 -l | grep -i "{{ server_profile.connectionSettings.connections[0].mac }}"  | awk '{ print $1 }'
+      register: server_ip
+#      delegate_to: worker-bm-3
+      delegate_to: localhost
+
+    - debug:
+       msg: "server_ip={{ server_ip }}"
+       msg: "server_ip={{ server_ip.stdout }}"
+
+#    - name: Inserting a line after a pattern in Ansible example
+#      lineinfile:
+#        path: /root/oneview-ansible/examples/demos/oneview-web-farm/demo/hosts.discovered
+#        line: "{{ server_profile_name }} ansible_host={{ server_ip.stdout }}  mac_address={{ server_profile.connections[6].mac }}"
+#      delegate_to: localhost
+
+#    - name: Inserting a line in /etc/hosts
+#      lineinfile:
+#        path: /etc/hosts
+#        line: "{{ server_ip.stdout }} {{ server_profile_name }}.jear.co {{ server_profile_name }}"
+#      delegate_to: localhost
+
+
+    - name: Add or delete host  in dns pri.jear.co forward zone 
+      nsupdate:
+        key_name: 10.69.40.251.jear.co
+        key_secret: ""
+        server: pri.jear.co
+        zone: "jear.co"
+        record: "{{server_profile_name}}"
+        value: "{{ server_ip.stdout }}"
+        #state: absent #uncomment to delete
+
+#    - selinux:
+#        state: disabled
+#
+#    - name: Delete keys in sysadmin/.ssh/known_hosts
+#      lineinfile: 
+#        dest=/root/.ssh/known_hosts
+#        state=absent 
+#        regexp='{{ server_profile_name }}'
+#      delegate_to: localhost
+
+
+#    - name: Copy ssh.tar
+##      shell: "sshpass -p {{ ansible_ssh_pass }} scp root@{{ server_profile }}:/root/ssh.tar  /root/ssh.tar"
+#      shell: "sshpass -p hpinvent scp /root/ssh.tar root@{{ server_profile_name }}:/root/ssh.tar"
+#      delegate_to: localhost
+
+#    - name: Untar ssh.tar
+##      shell: "sshpass -p {{ ansible_ssh_pass }} ssh root@{{ server_profile }} tar xf /root/ssh.tar"
+#      shell: "sshpass -p hpinvent ssh root@{{ server_profile_name }} 'tar xf /root/ssh.tar'"
+#      delegate_to: localhost
+
+#    - replace: #Updating inventory
+#        path: /root/oneview-ansible/examples/demos/oneview-web-farm/demo/hosts
+#        regexp: '(\s+){{ server_profile_name }}(\s+.*)?$'
+#        replace: '\1{{ server_profile_name }} ansible_host={{ server_ip.stdout }}  mac_address={{ server_profile.connections[6].mac }}\2'
+#        after: '[workers]'
+#        backup: yes
+#      delegate_to: localhost
+
+#    - name: Inserting a line after a pattern in Ansible example
+#      lineinfile:
+#        path: /root/oneview-ansible/examples/demos/oneview-web-farm/demo/hosts.discovered
+#        line: "{{ server_profiles }} ansible_host={{ server_ip.stdout }}  mac_address={{ server_profile.connections[6].mac }}"
+#        insertafter: "[discovered_dhcp_leases]"
+#
+#    - replace:
+#        path: /root/oneview-ansible/examples/demos/oneview-web-farm/demo/hosts
+#        regexp: '(\s+){{ server_profile_name }}(\s+.*)?$'
+#        replace: '\1{{ server_profile_name }} ansible_host={{ server_ip.stdout }}  mac_address={{ server_profile.connections[6].mac }}\2'
+#        after: '[workers]'
+#        backup: yes
+#      run_once: true
+
+#    - name: Updating {{ inventory_dir }}
+#      template:
+#        src: hosts.inv.j2
+#        dest: "{{ inventory_dir }}/hosts.inv"
+#      delegate_to: localhost
+#      become: false
+#
+#    - name: Wait for SSH connection to server
+#      wait_for: host="{{ ansible_host | default(inventory_hostname) }}" port=22 state=started timeout=6000
+#      delegate_to: localhost
+#
+#    - name: Get the info
+#      debug: msg="{{ hostvars[inventory_hostname] }}"
+
+#    - name: add a host
+#      add_host:
+#        hostname: "{{ new_ip }}"
+#        ansible_ssh_host: "{{ inventory_hostname }}"
+#        ansible_ssh_port: "{{ new_port }}"
+
+#    - name: Create in-memory inventory
+#      add_host:
+#        name: "{{ item.value.ServerName }}"
+#        groups: "{{ item.value.RoleTag }},tag_Environment_{{ env_name }}"
+#      when: item.value.template is defined
+#      with_dict: server_details
+
+#    - name: create file
+#      become: yes
+#      template:
+#        src: ansible-hosts.j2
+#        dest: "{{ inventory_file }}"
+
+#    - name: a play that runs entirely on the ansible host
+#      command: touch /tmp/toto
+#      delegate_to: 127.0.0.1
+
+

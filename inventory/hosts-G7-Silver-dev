@@ -1,0 +1,16 @@
+#####
+[masters]
+k8s-dev-controller-0
+#k8s-dev-controller-1
+#k8s-dev-controller-2
+
+[workers]
+k8s-dev-worker-0
+k8s-dev-worker-1
+#k8s-dev-worker-2
+
+[all-servers:children]
+masters
+workers
+
+[discovered_dhcp_leases]

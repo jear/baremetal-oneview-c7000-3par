@@ -1,0 +1,114 @@
+###
+# Copyright (2016-2017) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
+---
+# This playbook deploys the whole application stack in this site.
+
+- hosts: all-servers
+  connection: local
+  gather_facts: no
+  vars:
+    config: "{{ playbook_dir }}/oneview_config.json"
+    server_profile_name: "{{ inventory_hostname }}"
+#    server_profile_template: "Infra-as-Code-G7-Silver Template"
+#    osbase: "Centos7.2"
+    addon: "disk"
+    addon_alt: "disk_alt"
+    my_storage_system_ip: "10.71.0.193"
+    my_storage_system_username: ""
+    my_storage_system_password: ""
+    autolun: "true"
+    lunid0: "0"
+    lunid1: "1"
+    lunid2: "2"
+    inventory_dir: /root/oneview-ansible/examples/demos/oneview-web-farm/templates
+
+  tasks:
+    - name: Delete VLUN, well unexport from host
+      hpe3par_vlun:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: unexport_volume_from_host
+        volume_name: "{{ server_profile_name }}"
+        host_name: "{{ server_profile_name }}"
+        lunid: "{{ lunid0 }}"
+        autolun: "{{ autolun }}"
+      ignore_errors: true
+
+    - name: Delete VLUN, well unexport from host
+      hpe3par_vlun:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: unexport_volume_from_host
+        volume_name: "{{ server_profile_name }}_{{ addon }}"
+        host_name: "{{ server_profile_name }}"
+        lunid: "{{ lunid1 }}"
+        autolun: "{{ autolun }}"
+      ignore_errors: true
+
+    - name: Delete VLUN, well unexport from host
+      hpe3par_vlun:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: unexport_volume_from_host
+        volume_name: "{{ server_profile_name }}_{{ addon_alt }}"
+        host_name: "{{ server_profile_name }}"
+        lunid: "{{ lunid2 }}"
+        autolun: "{{ autolun }}"
+      ignore_errors: true
+
+#    - name: Delete host, host-sets, volume and volume-sets
+#      import_tasks: cleanup_vlun.yml
+
+    - name: Delete volume
+      hpe3par_volume:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: absent
+        volume_name: "{{ server_profile_name }}"
+      ignore_errors: true
+
+    - name: Delete volume
+      hpe3par_volume:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: absent
+        volume_name: "{{ server_profile_name }}_{{ addon }}"
+      ignore_errors: true
+
+    - name: Delete volume
+      hpe3par_volume:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: absent
+        volume_name: "{{ server_profile_name }}_{{ addon_alt }}"
+      ignore_errors: true
+
+    - name: delete Host
+      hpe3par_host:
+        storage_system_ip: "{{ my_storage_system_ip }}"
+        storage_system_username: "{{ my_storage_system_username }}"
+        storage_system_password: "{{ my_storage_system_password }}"
+        state: absent
+        host_name: "{{ server_profile_name }}"
+      ignore_errors: true
+
