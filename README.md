@@ -5,6 +5,14 @@ Join the discussion: [![Slack Status](https://dashif-slack.azurewebsites.net/bad
 Create BareMetal servers like VMs with  OneView API and 3par API
 ================================================================
 
+
+Synergy version
+---------------
+
+    https://github.com/tdovan/telco-caas-on-baremetal
+    https://github.com/jear/OBS-NGP-POC
+
+
 Prerequisites
 -------------
 
