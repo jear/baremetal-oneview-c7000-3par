@@ -10,7 +10,7 @@ Synergy version
 ---------------
 
     https://github.com/tdovan/telco-caas-on-baremetal
-    https://github.com/jear/OBS-NGP-POC
+    https://github.com/tdovan/OBS-NGP-POC
 
 
 Prerequisites
