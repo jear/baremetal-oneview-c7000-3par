@@ -48,8 +48,8 @@ Prerequisites
 Quick start 
 -------------
 
-#### Obviously you have manually installed an OS in volume, this is the Golden volume which will be cloned by 3PAR and booted from SAN by Oneview server profiles
-#### Clone 3PAR Boot Volume and Create OneView Server Profile
+#### Obviously you have manually installed an OS in a volume, this is your Golden volume which will be cloned by 3PAR and booted from SAN by Oneview server profiles
+#### Clone 3PAR Boot Volume and Create OneView Server Profile based on a template, so giving WWPN from Oneview profile to 3PAR 
     ansible-playbook -i inventory/baremetal-hosts playbooks/assign-bluedata-worker-Gen8-bfs-0-addon-3par-disks-large.yml -e ansible_python_interpreter=/root/miniconda3/envs/baremetal_python36/bin/python  --limit workers 
 
 
