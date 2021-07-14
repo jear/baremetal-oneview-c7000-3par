@@ -45,10 +45,10 @@ Prerequisites
     ansible-playbook -i inventory/localhost playbooks/oneview_version_facts.yml
 
 
-Quick start create/remove cluster
+Quick start 
 -------------
 
-#### Create cluster
+#### Obviously you have manually installed an OS in volume, this is the Golden volume which will be cloned by 3PAR and booted from SAN by Oneview server profiles
 #### Clone 3PAR Boot Volume and Create OneView Server Profile
     ansible-playbook -i inventory/baremetal-hosts playbooks/assign-bluedata-worker-Gen8-bfs-0-addon-3par-disks-large.yml -e ansible_python_interpreter=/root/miniconda3/envs/baremetal_python36/bin/python  --limit workers 
 
@@ -68,13 +68,12 @@ Quick start create/remove cluster
 
 
 
-#### delete cluster
+#### delete cluster, cleanup Oneview, 3PAR and DNS
     ansible-playbook -i inventory/$INVENTORY -e ansible_python_interpreter=/root/miniconda3/envs/baremetal_python36/bin/python playbooks/ov_server_delete.yml
     ansible-playbook -i inventory/$INVENTORY -e ansible_python_interpreter=/root/miniconda3/envs/baremetal_python36/bin/python playbooks/clean-3par-worker.yml
     ansible-playbook -i inventory/$INVENTORY -e ansible_python_interpreter=/root/miniconda3/envs/baremetal_python36/bin/python playbooks/manage_dns_rm.yml
 
 
-#### Ansible playbook from this repo
 
 
 
